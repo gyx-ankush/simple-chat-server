@@ -54,6 +54,22 @@ app.post('/join-room', (req, res) => {
   res.json(rooms[roomId].filter(id => id !== peerId));
 });
 
+// User leaves the room
+app.post('/leave-room', (req, res) => {
+  const { roomId, peerId } = req.body;
+
+  if (rooms[roomId]) {
+    // Remove the peer ID from the room
+    rooms[roomId] = rooms[roomId].filter(id => id !== peerId);
+    
+    // If the room is empty, delete it
+    if (rooms[roomId].length === 0) {
+      delete rooms[roomId];
+    }
+  }
+
+  res.json({ message: `Peer ${peerId} has left room ${roomId}` });
+});
 
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => {
