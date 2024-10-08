@@ -37,6 +37,24 @@ app.get('/get-peer-id/:code', (req, res) => {
   }
 });
 
+
+
+let rooms = {}; // Room storage (in-memory)
+
+app.post('/join-room', (req, res) => {
+  const { roomId, peerId } = req.body;
+
+  // Add the peer ID to the room
+  if (!rooms[roomId]) {
+    rooms[roomId] = [];
+  }
+  rooms[roomId].push(peerId);
+
+  // Return all other peers in the room except the newly joined one
+  res.json(rooms[roomId].filter(id => id !== peerId));
+});
+
+
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
