@@ -1,6 +1,7 @@
 const express = require('express');
 const { ExpressPeerServer } = require('peer');
 const http = require('http');
+const ogs = require('open-graph-scraper');
 const app = express();
 const server = http.createServer(app);
 const peerServer = ExpressPeerServer(server, {
@@ -45,25 +46,32 @@ app.post('/get-link-preview', async (req, res) => {
       return res.status(400).json({ error: 'URL is required' });
   }
 
-  try {
+  // try {
       // Open Graph Scraper options
       const options = { url: url };
       const { result } = await ogs(options);
 
       if (result.success) {
           // Respond with relevant Open Graph data
-          return res.json({
-              title: result.ogTitle,
-              description: result.ogDescription,
-              image: result.ogImage?.url,
-              url: result.ogUrl || url,
-          });
+        var img = null;
+
+        if (Array.isArray(result.ogImage))
+          img = result.ogImage[0].url;
+        else if (typeof result.ogImage === 'object' && result.ogImage !== null)
+          img = result.ogImage.url
+
+        return res.json({
+            title: result.ogTitle,
+            description: result.ogDescription,
+            image: img,
+            url: result.ogUrl || url,
+        });
       } else {
-          return res.status(500).json({ error: 'Failed to fetch Open Graph data' });
+        return res.status(500).json({ error: 'Failed to fetch Open Graph data' });
       }
-  } catch (error) {
-      return res.status(500).json({ error: 'An error occurred while fetching link preview' });
-  }
+  // } catch (error) {
+  //     return res.status(500).json({ error: 'An error occurred while fetching link preview' });
+  // }
 });
 
 let rooms = {}; // Room storage (in-memory)
